@@ -60,7 +60,7 @@ pdfinfo.optimized?    #=> false # or true
 
 # Pages
 pdfinfo.pages         #=> [#<Pdfinfo::Page height=792.0 width=612.0 rotation=0.0>, ...]
-first_page = pdfinfo.page[0]
+first_page = pdfinfo.pages[0]
 first_page.height     #=> 792.0
 first_page.width      #=> 612.0
 first_page.rotation   #=> 0.0
@@ -88,6 +88,21 @@ If you have an .xpdfrc file, you can set it globally or one-off with 'config_pat
 Pdfinfo.config_path = 'path/to/.xpdfrc'
 # or one-off
 Pdfinfo.new('path/to/file.pdf', config_path: 'path/to/.xpdfrc')
+```
+
+If you need to get the trim boundaries, you can set the optional `box` option to `true`
+
+```ruby
+pdfinfo = Pdfinfo.new('path/to/file.pdf', box: true)
+pdfinfo.trim_width    #=> 612.0
+pdfinfo.trim_height   #=> 792.0
+
+# Trim Pages
+pdfinfo.trim_pages    #=> [#<Pdfinfo::TrimPage height=792.0 width=612.0 rotation=0.0>, ...]
+first_page = pdfinfo.trim_pages[0]
+first_page.height     #=> 792.0
+first_page.width      #=> 612.0
+first_page.rotation   #=> 0.0
 ```
 
 ## Recent Changes
