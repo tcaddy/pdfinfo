@@ -70,6 +70,13 @@ RSpec.describe Pdfinfo do
       end
     end
 
+    context 'passing in :box' do
+      it 'runs the pdfinfo command passing the box flag' do
+        expect_command_will_run("pdfinfo -f 0 -l -1 -enc UTF-8 -box #{mock_file_path}")
+        Pdfinfo.new(mock_file_path, box: true)
+      end
+    end
+
     context 'when passed a path with spaces' do
       it 'should escape the file path' do
         expect_command_will_run("pdfinfo -f 0 -l -1 -enc UTF-8 path/to/file\\ with\\ spaces.pdf")
@@ -398,9 +405,53 @@ RSpec.describe Pdfinfo do
     end
   end
 
+  describe '#trim_width' do
+    [false, true].each do |with_box_opt|
+      context "with#{with_box_opt ? nil : 'out'} -box option" do
+        let(:this_pdfinfo) do
+          if with_box_opt
+            pdfinfo_with_trim
+          else
+            pdfinfo
+          end
+        end
+        subject { this_pdfinfo.trim_width }
+        it "refers to the first page trim_width" do
+          if with_box_opt
+            expect(subject).to eq(590.28)
+          else
+            expect(subject).to be_nil
+          end
+        end
+      end
+    end
+  end
+
+  describe '#trim_height' do
+    [false, true].each do |with_box_opt|
+      context "with#{with_box_opt ? nil : 'out'} -box option" do
+        let(:this_pdfinfo) do
+          if with_box_opt
+            pdfinfo_with_trim
+          else
+            pdfinfo
+          end
+        end
+        subject { this_pdfinfo.trim_height }
+        it "refers to the first page trim_height" do
+          if with_box_opt
+            expect(subject).to eq(840.89)
+          else
+            expect(subject).to be_nil
+          end
+        end
+      end
+    end
+  end
+
   describe '#size' do
     it 'returns a fixnm value for the file size in bytes' do
-      expect(pdfinfo.file_size).to be_a(Fixnum).and be_between(2800, 2900)
+      expect(pdfinfo.file_size).to be_a(Fixnum).and be_between(2800, 3100)
     end
   end
 
@@ -428,7 +479,7 @@ RSpec.describe Pdfinfo do
         tagged: false,
         encrypted: false,
         page_count: 5,
-        file_size: 2867,
+        file_size: 3041,
         form: "none",
         pdf_version: "1.3",
         optimized: false,
@@ -440,7 +491,8 @@ RSpec.describe Pdfinfo do
           copy: true,
           change: true,
           add_notes: true
-        }
+        },
+        trim_pages: []
       }
     end
 

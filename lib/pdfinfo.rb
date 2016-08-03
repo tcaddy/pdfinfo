@@ -8,7 +8,8 @@ class Pdfinfo
   include ToHash
   attr_reader :pages, :title, :subject, :keywords, :author, :creator,
     :creation_date, :modified_date, :usage_rights, :producer,
-    :form, :page_count, :width, :height, :file_size, :pdf_version
+    :form, :page_count, :width, :height, :file_size, :pdf_version,
+    :trim_width, :trim_height, :trim_pages
 
   class << self
     def pdfinfo_command
@@ -33,6 +34,15 @@ class Pdfinfo
     @pages = []
     info_hash.delete_if do |key, value|
       @pages << Page.from_string(value) if key.match(/Page\s+\d+\ssize/)
+    end
+
+    @trim_pages = []
+    begin
+      info_hash.delete_if do |key, value|
+        @trim_pages << TrimPage.from_string(value) if key.match(/Page\s+\d+\sTrimBox/)
+      end
+    rescue
+      @trim_pages = []
     end
 
     encrypted_val = info_hash.delete('Encrypted')
@@ -66,6 +76,14 @@ class Pdfinfo
 
   %w(width height).each do |attr|
     define_method(attr) { @pages[0].send(attr) }
+  end
+
+  def trim_width
+    @trim_pages[0].width if @trim_pages and @trim_pages[0]
+  end
+
+  def trim_height
+    @trim_pages[0].height if @trim_pages and @trim_pages[0]
   end
 
   # Feature checks
@@ -102,6 +120,7 @@ class Pdfinfo
 
     stdout, status = Open3.capture2(command)
     raise CommandFailed.new(command) unless status.success?
+
     force_utf8_encoding(stdout)
   end
 
@@ -126,6 +145,7 @@ class Pdfinfo
     flags.concat(['-cfg', xpdfrc_path])           if xpdfrc_path
     flags.concat(['-opw', opts[:owner_password]]) if opts[:owner_password]
     flags.concat(['-upw', opts[:user_password]])  if opts[:user_password]
+    flags.concat(['-box']) if opts[:box]
     flags.map(&:to_s)
   end
 

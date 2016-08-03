@@ -8,8 +8,10 @@ class Pdfinfo
             let(:response_modification_handler) { Proc.new {} }
             let(:encrypted_pdf_path) { fixture_path('pdfs/encrypted.pdf') }
             let(:unencrypted_pdf_path) { fixture_path('pdfs/unencrypted.pdf') }
+            let(:trimbox_pdf_path) { fixture_path('pdfs/trimbox.pdf') }
 
             let(:pdfinfo) { described_class.new(pdf_path, user_password: user_password) }
+            let(:pdfinfo_with_trim) { described_class.new(pdf_path, box: true) }
           end
         end
 
